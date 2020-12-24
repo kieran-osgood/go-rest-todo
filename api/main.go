@@ -49,7 +49,6 @@ func declareAPIRoutes(logger *zap.SugaredLogger, router *gin.Engine, db *sql.DB)
 			if err != nil {
 				logger.Error(err)
 			}
-			logger.Debug(todo.ID)
 			todos = append(todos, todo)
 		}
 
