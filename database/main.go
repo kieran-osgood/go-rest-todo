@@ -3,31 +3,54 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"log"
 
-	"github.com/kieran-osgood/go-rest-todo/config"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file" // required
 	_ "github.com/lib/pq"
 )
 
-func Init() {
-	config := config.New()
+// Database constructor
+type Database struct {
+	Host   string
+	Port   int
+	User   string
+	Pass   string
+	DbName string
+}
 
-	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
-		"password=%s dbname=%s sslmode=disable",
-		config.Database.Host, config.Database.Port, config.Database.User, config.Database.Pass, config.Database.DbName)
-	log.Printf(psqlInfo)
+const version = 1
+
+// Init function for database
+func (d *Database) Init() error {
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", d.Host, d.Port, d.User, d.Pass, d.DbName)
 
 	db, err := sql.Open("postgres", psqlInfo)
 
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer db.Close()
 
 	err = db.Ping()
 	if err != nil {
-		panic(err)
+		return err
 	}
 
+	driver, err := postgres.WithInstance(db, &postgres.Config{})
+	m, err := migrate.NewWithDatabaseInstance(
+		"file://database/migrations",
+		"postgres", driver)
+
+	if err != nil {
+		return err
+	}
+
+	version, dirty, err := m.Version()
+	fmt.Printf("current version: %v dirty: %v", version, dirty)
+
+	m.Steps(3)
+
 	fmt.Println("Successfully connected!")
+	return nil
 }

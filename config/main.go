@@ -24,11 +24,11 @@ type Config struct {
 func New() *Config {
 	return &Config{
 		Database: DatabaseConfig{
-			Host:   getEnv("HOST", ""),
-			Port:   getEnvAsInt("PORT", 1),
-			User:   getEnv("USERNAME", ""),
-			Pass:   getEnv("PASS", ""),
-			DbName: getEnv("DBNAME", ""),
+			Host:   getEnv("POSTGRES_HOST", ""),
+			Port:   getEnvAsInt("POSTGRES_PORT", 1),
+			User:   getEnv("POSTGRES_USER", ""),
+			Pass:   getEnv("POSTGRES_PASSWORD", ""),
+			DbName: getEnv("POSTGRES_DB", ""),
 		},
 	}
 }
