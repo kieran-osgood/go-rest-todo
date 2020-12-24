@@ -23,7 +23,8 @@ const version = 1
 
 // Init function for database
 func (d *Database) Init() error {
-	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", d.Host, d.Port, d.User, d.Pass, d.DbName)
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		d.Host, d.Port, d.User, d.Pass, d.DbName)
 
 	db, err := sql.Open("postgres", psqlInfo)
 
@@ -46,8 +47,9 @@ func (d *Database) Init() error {
 		return err
 	}
 
-	version, dirty, err := m.Version()
-	fmt.Printf("current version: %v dirty: %v", version, dirty)
+	// version, dirty, err := m.Version()
+
+	// zap.L().Infof("Migration - Version: %v Dirty: %v \n", version, dirty)
 
 	m.Steps(3)
 
