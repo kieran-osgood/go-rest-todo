@@ -8,6 +8,7 @@ import (
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file" // required
 	_ "github.com/lib/pq"
+	"go.uber.org/zap"
 )
 
 // Database constructor
@@ -22,7 +23,7 @@ type Database struct {
 const version = 1
 
 // Init function for database
-func (d *Database) Init() error {
+func (d *Database) Init(logger *zap.SugaredLogger) error {
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		d.Host, d.Port, d.User, d.Pass, d.DbName)
 
@@ -40,19 +41,19 @@ func (d *Database) Init() error {
 
 	driver, err := postgres.WithInstance(db, &postgres.Config{})
 	m, err := migrate.NewWithDatabaseInstance(
-		"file://database/migrations",
-		"postgres", driver)
-
+		"file://database/migrations", "postgres", driver)
 	if err != nil {
 		return err
 	}
 
-	// version, dirty, err := m.Version()
+	version, dirty, err := m.Version()
+	logger.Infof("migration - version: %v dirty: %v \n", version, dirty)
 
-	// zap.L().Infof("Migration - Version: %v Dirty: %v \n", version, dirty)
+	err = m.Steps(3)
+	if err != nil {
+		return err
+	}
 
-	m.Steps(3)
-
-	fmt.Println("Successfully connected!")
+	logger.Info("database connection/migration successful")
 	return nil
 }

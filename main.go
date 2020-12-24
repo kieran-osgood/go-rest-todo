@@ -3,12 +3,11 @@ package main
 import (
 	"log"
 
+	"github.com/docker/docker/daemon/config"
 	"github.com/joho/godotenv"
-	"github.com/kieran-osgood/go-rest-todo/api"
-	"github.com/kieran-osgood/go-rest-todo/config"
-	"github.com/kieran-osgood/go-rest-todo/database"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"google.golang.org/genproto/googleapis/spanner/admin/database/v1"
 )
 
 // init is invoked before main()
@@ -48,12 +47,12 @@ func main() {
 		Pass:   config.Database.Pass,
 		DbName: config.Database.DbName,
 	}
-	err = pgsql.Init()
+	err = pgsql.Init(logger)
 	if err != nil {
 		logger.Panic("pgsql.Init", err)
 	}
 
-	err = api.Init()
+	err = api.Init(logger)
 	if err != nil {
 		logger.Panic("api.Init", err)
 	}

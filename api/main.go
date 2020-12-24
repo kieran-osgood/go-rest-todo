@@ -1,9 +1,12 @@
 package api
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
+)
 
 // Init function for API service
-func Init() error {
+func Init(logger *zap.SugaredLogger) error {
 	r := gin.Default()
 	declareRoutes(r)
 
@@ -12,6 +15,7 @@ func Init() error {
 		return err
 	}
 
+	logger.Info("api service initialized")
 	return nil
 }
 
