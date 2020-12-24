@@ -30,12 +30,14 @@ func (d *Database) Init(logger *zap.SugaredLogger) error {
 	db, err := sql.Open("postgres", psqlInfo)
 
 	if err != nil {
+		logger.Error(err)
 		return err
 	}
 	defer db.Close()
 
 	err = db.Ping()
 	if err != nil {
+		logger.Error(err)
 		return err
 	}
 
@@ -43,16 +45,14 @@ func (d *Database) Init(logger *zap.SugaredLogger) error {
 	m, err := migrate.NewWithDatabaseInstance(
 		"file://database/migrations", "postgres", driver)
 	if err != nil {
+		logger.Error(err)
 		return err
 	}
 
 	version, dirty, err := m.Version()
-	logger.Infof("migration - version: %v dirty: %v \n", version, dirty)
+	logger.Infof("migration - version: %v dirty: %v", version, dirty)
 
-	err = m.Steps(3)
-	if err != nil {
-		return err
-	}
+	m.Steps(3)
 
 	logger.Info("database connection/migration successful")
 	return nil
