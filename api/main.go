@@ -21,7 +21,9 @@ type Todo struct {
 // Init function for API service
 func Init(logger *zap.SugaredLogger, db *sql.DB) error {
 	router := gin.Default()
-	declareAPIRoutes(logger, router, db)
+	apiGroup := router.Group("/api")
+
+	declareAPIRoutes(logger, apiGroup, db)
 
 	err := router.Run(":8080") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 	if err != nil {
@@ -33,9 +35,13 @@ func Init(logger *zap.SugaredLogger, db *sql.DB) error {
 	return nil
 }
 
-func declareAPIRoutes(logger *zap.SugaredLogger, router *gin.Engine, db *sql.DB) {
-	apiGroup := router.Group("/api")
-	apiGroup.GET("/todos", func(c *gin.Context) {
+func declareAPIRoutes(logger *zap.SugaredLogger, apiGroup *gin.RouterGroup, db *sql.DB) {
+	todoRoutes(logger, apiGroup, db)
+}
+
+func todoRoutes(logger *zap.SugaredLogger, apiGroup *gin.RouterGroup, db *sql.DB) {
+	todosGroup := apiGroup.Group("/todos")
+	todosGroup.GET("/", func(c *gin.Context) {
 		rows, err := sq.Select("*").From("todo").RunWith(db).Query()
 		if err != nil {
 			logger.Error(err)
@@ -55,7 +61,8 @@ func declareAPIRoutes(logger *zap.SugaredLogger, router *gin.Engine, db *sql.DB)
 		if err = rows.Err(); err != nil {
 			logger.Fatal(err)
 		}
-		// m, _ := json.Marshal(&todos)
-		c.JSON(200, todos)
+		c.JSON(200, gin.H{
+			"data": todos,
+		})
 	})
 }
