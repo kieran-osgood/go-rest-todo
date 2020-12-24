@@ -21,7 +21,7 @@ type Todo struct {
 // Init function for API service
 func Init(logger *zap.SugaredLogger, db *sql.DB) error {
 	router := gin.Default()
-	declareRoutes(logger, router, db)
+	declareAPIRoutes(logger, router, db)
 
 	err := router.Run(":8080") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 	if err != nil {
@@ -33,8 +33,9 @@ func Init(logger *zap.SugaredLogger, db *sql.DB) error {
 	return nil
 }
 
-func declareRoutes(logger *zap.SugaredLogger, router *gin.Engine, db *sql.DB) {
-	router.GET("/api/todos", func(c *gin.Context) {
+func declareAPIRoutes(logger *zap.SugaredLogger, router *gin.Engine, db *sql.DB) {
+	apiGroup := router.Group("/api")
+	apiGroup.GET("/todos", func(c *gin.Context) {
 		rows, err := sq.Select("*").From("todo").RunWith(db).Query()
 		if err != nil {
 			logger.Error(err)
