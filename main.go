@@ -48,12 +48,13 @@ func main() {
 		Pass:   config.Database.Pass,
 		DbName: config.Database.DbName,
 	}
-	err = pgsql.Init(logger)
+	db, err := pgsql.Init(logger)
 	if err != nil {
 		logger.Panicf("pgsql init: %v", err)
 	}
+	defer db.Close()
 
-	err = api.Init(logger)
+	err = api.Init(logger, db)
 	if err != nil {
 		logger.Panicf("api init: %v", err)
 	}
