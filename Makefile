@@ -6,10 +6,12 @@ up:
 down: 
 	docker-compose down --rmi all
 run:
-	go run ./src/gqlgen/server.go
+	go run main.go
 generate:
 	go run github.com/99designs/gqlgen generate
 db-generate: # usage: make db-generate migration="INSERT_MIGRATION_NAME"
 	migrate create -ext sql -dir database/migrations -seq $(migration)
 db-migrate:
 	migrate -path database/migrations -database postgres://$$HOST:$$PORT/database up 1
+air:
+	air
