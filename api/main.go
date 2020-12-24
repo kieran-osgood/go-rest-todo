@@ -41,28 +41,39 @@ func declareAPIRoutes(logger *zap.SugaredLogger, apiGroup *gin.RouterGroup, db *
 
 func todoRoutes(logger *zap.SugaredLogger, apiGroup *gin.RouterGroup, db *sql.DB) {
 	todosGroup := apiGroup.Group("/todos")
+	/**
+	 * Create a todo_service that will define the struct and has the
+	 */
 	todosGroup.GET("/", func(c *gin.Context) {
-		rows, err := sq.Select("*").From("todo").RunWith(db).Query()
+		todos, err := getTodos(logger, apiGroup, db)
 		if err != nil {
 			logger.Error(err)
-		}
-		defer rows.Close()
-
-		todos := make([]Todo, 0)
-		for rows.Next() {
-			var todo Todo
-			err := rows.Scan(&todo.CreationTimestamp, &todo.UpdateTimestamp, &todo.ID, &todo.Text, &todo.IsDone)
-			if err != nil {
-				logger.Error(err)
-			}
-			todos = append(todos, todo)
-		}
-
-		if err = rows.Err(); err != nil {
-			logger.Fatal(err)
 		}
 		c.JSON(200, gin.H{
 			"data": todos,
 		})
 	})
+}
+
+func getTodos(logger *zap.SugaredLogger, apiGroup *gin.RouterGroup, db *sql.DB) ([]Todo, error) {
+	rows, err := sq.Select("*").From("todo").RunWith(db).Query()
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	todos := make([]Todo, 0)
+	for rows.Next() {
+		var todo Todo
+		err := rows.Scan(&todo.CreationTimestamp, &todo.UpdateTimestamp, &todo.ID, &todo.Text, &todo.IsDone)
+		if err != nil {
+			return nil, err
+		}
+		todos = append(todos, todo)
+	}
+
+	if err = rows.Err(); err != nil {
+		logger.Error(err)
+	}
+	return todos, nil
 }
