@@ -42,16 +42,18 @@ func todoRoutes(logger *zap.SugaredLogger, apiGroup *gin.RouterGroup, db *sql.DB
 		todos, err := todoService.GetTodos()
 		if err != nil {
 			logger.Error(err)
+
 		}
 		c.JSON(200, gin.H{
 			"data": todos,
 		})
 	})
+
 	type PostRes struct {
 		id uuid.UUID
 	}
-	todosGroup.POST("/add", func(c *gin.Context) {
 
+	todosGroup.POST("/add", func(c *gin.Context) {
 		id, err := todoService.PostTodos(c)
 		if err != nil {
 			logger.Error(err)
@@ -59,8 +61,9 @@ func todoRoutes(logger *zap.SugaredLogger, apiGroup *gin.RouterGroup, db *sql.DB
 				"success": false,
 				"error":   "Failed to add todo.",
 			})
+			return
 		}
-		logger.Infof("id: %v", *id)
+
 		c.JSON(200, gin.H{
 			"success": true,
 			"data": PostRes{
