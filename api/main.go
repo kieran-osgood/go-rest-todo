@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gofrs/uuid"
 	"github.com/kieran-osgood/go-rest-todo/database/models"
 	"go.uber.org/zap"
 )
@@ -46,4 +47,26 @@ func todoRoutes(logger *zap.SugaredLogger, apiGroup *gin.RouterGroup, db *sql.DB
 			"data": todos,
 		})
 	})
+	type PostRes struct {
+		id uuid.UUID
+	}
+	todosGroup.POST("/add", func(c *gin.Context) {
+
+		id, err := todoService.PostTodos(c)
+		if err != nil {
+			logger.Error(err)
+			c.JSON(500, gin.H{
+				"success": false,
+				"error":   "Failed to add todo.",
+			})
+		}
+		logger.Infof("id: %v", *id)
+		c.JSON(200, gin.H{
+			"success": true,
+			"data": PostRes{
+				id: *id,
+			},
+		})
+	})
+
 }
