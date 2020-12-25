@@ -2,7 +2,6 @@ package models
 
 import (
 	"database/sql"
-
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gin-gonic/gin"
 
@@ -88,4 +87,30 @@ func (t *TodoService) PostTodos(c *gin.Context) (*uuid.UUID, error) {
 		return nil, err
 	}
 	return &uuid, nil
+}
+
+// DeleteTodo - retrieves all Todos in the database
+func (t *TodoService) DeleteTodo(c *gin.Context) {
+	id := c.Param("id")
+
+	_, err := sq.
+		Delete(tableName).
+		Where(sq.Eq{"id": id}).
+		RunWith(t.Db).
+		PlaceholderFormat(sq.Dollar).
+		Exec()
+
+	if err != nil {
+		t.Logger.Error(err)
+		c.JSON(500, gin.H{
+			"success": false,
+			"error":   "Failed to delete.",
+		})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"success": true,
+	})
+	return
 }

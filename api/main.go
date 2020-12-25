@@ -69,4 +69,5 @@ func todoRoutes(logger *zap.SugaredLogger, apiGroup *gin.RouterGroup, db *sql.DB
 		})
 	})
 
+	todosGroup.DELETE("/:id", todoService.DeleteTodo)
 }
