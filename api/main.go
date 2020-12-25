@@ -4,7 +4,6 @@ import (
 	"database/sql"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gofrs/uuid"
 	"github.com/kieran-osgood/go-rest-todo/database/models"
 	"go.uber.org/zap"
 )
@@ -32,45 +31,12 @@ func declareAPIRoutes(logger *zap.SugaredLogger, apiGroup *gin.RouterGroup, db *
 
 func todoRoutes(logger *zap.SugaredLogger, apiGroup *gin.RouterGroup, db *sql.DB) {
 	todosGroup := apiGroup.Group("/todos")
-
 	todoService := &models.TodoService{
 		Db:     db,
 		Logger: logger,
 	}
 
-	todosGroup.GET("/", func(c *gin.Context) {
-		todos, err := todoService.GetTodos()
-		if err != nil {
-			logger.Error(err)
-
-		}
-		c.JSON(200, gin.H{
-			"data": todos,
-		})
-	})
-
-	type PostRes struct {
-		id uuid.UUID
-	}
-
-	todosGroup.POST("/add", func(c *gin.Context) {
-		id, err := todoService.PostTodos(c)
-		if err != nil {
-			logger.Error(err)
-			c.JSON(500, gin.H{
-				"success": false,
-				"error":   "Failed to add todo.",
-			})
-			return
-		}
-
-		c.JSON(200, gin.H{
-			"success": true,
-			"data": PostRes{
-				id: *id,
-			},
-		})
-	})
-
+	todosGroup.GET("/", todoService.ListTodos)
+	todosGroup.POST("/", todoService.CreateTodo)
 	todosGroup.DELETE("/:id", todoService.DeleteTodo)
 }

@@ -27,10 +27,20 @@ type TodoDatabaseEntity struct {
 }
 
 // GetTodos - retrieves all Todos in the database
-func (t *TodoService) GetTodos() ([]TodoDatabaseEntity, error) {
-	rows, err := sq.Select("*").From(tableName).RunWith(t.Db).Query()
+func (t *TodoService) ListTodos(c *gin.Context) {
+	rows, err := sq.
+		Select("*").
+		From(tableName).
+		RunWith(t.Db).
+		Query()
+
 	if err != nil {
-		return nil, err
+		t.Logger.Error(err)
+		c.JSON(500, gin.H{
+			"success": false,
+			"error":   "Database connection failed.",
+		})
+		return
 	}
 	defer rows.Close()
 
@@ -39,15 +49,24 @@ func (t *TodoService) GetTodos() ([]TodoDatabaseEntity, error) {
 		var todo TodoDatabaseEntity
 		err := rows.Scan(&todo.CreationTimestamp, &todo.UpdateTimestamp, &todo.ID, &todo.Text, &todo.IsDone)
 		if err != nil {
-			return nil, err
+			t.Logger.Error(err)
+			return
 		}
 		todos = append(todos, todo)
 	}
 
 	if err = rows.Err(); err != nil {
 		t.Logger.Error(err)
+		c.JSON(500, gin.H{
+			"success": false,
+			"error":   "Error serializing database rows.",
+		})
+		return
 	}
-	return todos, nil
+
+	c.JSON(200, gin.H{
+		"data": todos,
+	})
 }
 
 // TodoPost - Base type
@@ -56,37 +75,58 @@ type TodoPost struct {
 	IsDone bool
 }
 
-// PostTodos - retrieves all Todos in the database
-func (t *TodoService) PostTodos(c *gin.Context) (*uuid.UUID, error) {
-	var todopostmap TodoPost
+type PostRes struct {
+	id uuid.UUID
+}
 
+// PostTodos - retrieves all Todos in the database
+func (t *TodoService) CreateTodo(c *gin.Context) {
+	var todopostmap TodoPost
 	err := c.BindJSON(&todopostmap)
 	if err != nil {
-		return nil, err
+		t.Logger.Error(err)
+		return
 	}
+
 	/**
 	 * do some validation that the todopostmap has all the fields required
 	 * figure out how to throw 400 BAD REQUEST
 	 */
-	uuid, err := uuid.NewV4()
+	uuidv, err := uuid.NewV4()
 	if err != nil {
-		return nil, err
+		t.Logger.Error(err)
+		c.JSON(500, gin.H{
+			"success": false,
+			"error":   "Failed to add todo.",
+		})
+		return
 	}
 
 	err = sq.
 		Insert(tableName).
 		Columns("id", "is_done", "text").
-		Values(uuid, todopostmap.IsDone, todopostmap.Text).
+		Values(uuidv, todopostmap.IsDone, todopostmap.Text).
 		Suffix("RETURNING \"id\"").
 		RunWith(t.Db).
 		PlaceholderFormat(sq.Dollar).
 		QueryRow().
-		Scan(&uuid)
+		Scan(&uuidv)
 
 	if err != nil {
-		return nil, err
+		t.Logger.Error(err)
+		c.JSON(500, gin.H{
+			"success": false,
+			"error":   "Failed to add todo.",
+		})
+		return
 	}
-	return &uuid, nil
+
+	c.JSON(200, gin.H{
+		"success": true,
+		"data": PostRes{
+			id: uuidv,
+		},
+	})
 }
 
 // DeleteTodo - retrieves all Todos in the database
