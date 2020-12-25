@@ -20,7 +20,7 @@ type Database struct {
 	DbName string
 }
 
-const version = 1
+const databaseVersion int = 3
 
 // Init function for database
 func (d *Database) Init(logger *zap.SugaredLogger) (*sql.DB, error) {
@@ -57,7 +57,7 @@ func (d *Database) Init(logger *zap.SugaredLogger) (*sql.DB, error) {
 	}
 	logger.Infof("migration - version: %v dirty: %v", version, dirty)
 
-	m.Steps(3)
+	m.Steps(databaseVersion)
 
 	logger.Info("database connection/migration successful")
 	return db, nil
