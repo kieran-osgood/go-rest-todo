@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gin-gonic/gin"
+	"github.com/kieran-osgood/go-rest-todo/api"
 	"net/http"
 
 	uuidv4 "github.com/gofrs/uuid"
@@ -40,7 +41,8 @@ func (t *TodoService) ListTodos(c *gin.Context) {
 		t.Logger.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
-			"error":   "Database connection failed.",
+			"error":   api.ServerError,
+			"message": "Database connection failed.",
 		})
 		return
 	}
@@ -61,7 +63,8 @@ func (t *TodoService) ListTodos(c *gin.Context) {
 		t.Logger.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
-			"error":   "Error serializing database rows.",
+			"error":   api.ServerError,
+			"message": "Error serializing database rows.",
 		})
 		return
 	}
@@ -83,7 +86,8 @@ func (t *TodoService) CreateTodo(c *gin.Context) {
 		t.Logger.Error(err)
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"error":   "Invalid post body.",
+			"error":   api.BadRequest,
+			"message": "Invalid post body.",
 		})
 		return
 	}
@@ -91,7 +95,8 @@ func (t *TodoService) CreateTodo(c *gin.Context) {
 	if todo.Text == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"error":   "Text is a required field.",
+			"message": "Text is a required field.",
+			"error":   api.BadRequest,
 		})
 		return
 	}
@@ -101,7 +106,8 @@ func (t *TodoService) CreateTodo(c *gin.Context) {
 		t.Logger.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
-			"error":   "Failed to add todo.",
+			"message": "Couldn't create ID.",
+			"error":   api.ServerError,
 		})
 		return
 	}
@@ -120,7 +126,8 @@ func (t *TodoService) CreateTodo(c *gin.Context) {
 		t.Logger.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
-			"error":   "Failed to add todo.",
+			"message": "Failed to access database.",
+			"error":   api.ServerError,
 		})
 		return
 	}
@@ -148,7 +155,8 @@ func (t *TodoService) DeleteTodo(c *gin.Context) {
 		t.Logger.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
-			"error":   "Failed to delete.",
+			"error":   api.ServerError,
+			"message": "Failed to access database.",
 		})
 		return
 	}
