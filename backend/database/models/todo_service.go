@@ -95,8 +95,8 @@ func (t *TodoService) CreateTodo(c *gin.Context) {
 	if todo.Text == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"message": "Text is a required field.",
 			"error":   api.BadRequest,
+			"message": "Text is a required field.",
 		})
 		return
 	}
@@ -106,8 +106,8 @@ func (t *TodoService) CreateTodo(c *gin.Context) {
 		t.Logger.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
-			"message": "Couldn't create ID.",
 			"error":   api.ServerError,
+			"message": "Couldn't create ID.",
 		})
 		return
 	}
@@ -126,8 +126,8 @@ func (t *TodoService) CreateTodo(c *gin.Context) {
 		t.Logger.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
-			"message": "Failed to access database.",
 			"error":   api.ServerError,
+			"message": "Failed to access database.",
 		})
 		return
 	}
