@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gin-gonic/gin"
+	"net/http"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/zap"
@@ -36,7 +37,7 @@ func (t *TodoService) ListTodos(c *gin.Context) {
 
 	if err != nil {
 		t.Logger.Error(err)
-		c.JSON(500, gin.H{
+		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
 			"error":   "Database connection failed.",
 		})
@@ -57,14 +58,14 @@ func (t *TodoService) ListTodos(c *gin.Context) {
 
 	if err = rows.Err(); err != nil {
 		t.Logger.Error(err)
-		c.JSON(500, gin.H{
+		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
 			"error":   "Error serializing database rows.",
 		})
 		return
 	}
 
-	c.JSON(200, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"data": todos,
 	})
 }
@@ -95,7 +96,7 @@ func (t *TodoService) CreateTodo(c *gin.Context) {
 	uuidv, err := uuid.NewV4()
 	if err != nil {
 		t.Logger.Error(err)
-		c.JSON(500, gin.H{
+		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
 			"error":   "Failed to add todo.",
 		})
@@ -114,14 +115,14 @@ func (t *TodoService) CreateTodo(c *gin.Context) {
 
 	if err != nil {
 		t.Logger.Error(err)
-		c.JSON(500, gin.H{
+		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
 			"error":   "Failed to add todo.",
 		})
 		return
 	}
 
-	c.JSON(200, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"data": PostRes{
 			id: uuidv,
@@ -142,14 +143,14 @@ func (t *TodoService) DeleteTodo(c *gin.Context) {
 
 	if err != nil {
 		t.Logger.Error(err)
-		c.JSON(500, gin.H{
+		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
 			"error":   "Failed to delete.",
 		})
 		return
 	}
 
-	c.JSON(200, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 	})
 	return
