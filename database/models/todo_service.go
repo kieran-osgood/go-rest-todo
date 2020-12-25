@@ -22,7 +22,7 @@ var tableName = "todo"
 type Todo struct {
 	UpdateTimestamp   sql.NullTime
 	CreationTimestamp sql.NullTime
-	ID                uuid.UUID
+	ID                uuidv4.UUID
 	Text              string
 	IsDone            bool
 }
@@ -81,13 +81,21 @@ func (t *TodoService) CreateTodo(c *gin.Context) {
 	err := c.BindJSON(&todo)
 	if err != nil {
 		t.Logger.Error(err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"error":   "Invalid post body.",
+		})
 		return
 	}
 
-	/**
-	 * do some validation that the todo has all the fields required
-	 * figure out how to throw 400 BAD REQUEST
-	 */
+	if todo.Text == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"error":   "Text is a required field.",
+		})
+		return
+	}
+
 	uuid, err := uuidv4.NewV4()
 	if err != nil {
 		t.Logger.Error(err)
