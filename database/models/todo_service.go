@@ -6,20 +6,20 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 
-	"github.com/gofrs/uuid"
+	uuidv4 "github.com/gofrs/uuid"
 	"go.uber.org/zap"
 )
 
-var tableName = "todo"
-
-// TodoService - Initialiser for service
+// TodoService - Initializer for service
 type TodoService struct {
 	Logger *zap.SugaredLogger
 	Db     *sql.DB
 }
 
-// TodoDatabaseEntity - Base type
-type TodoDatabaseEntity struct {
+var tableName = "todo"
+
+// Todo - Full model representative of the database shape
+type Todo struct {
 	UpdateTimestamp   sql.NullTime
 	CreationTimestamp sql.NullTime
 	ID                uuid.UUID
@@ -27,12 +27,13 @@ type TodoDatabaseEntity struct {
 	IsDone            bool
 }
 
-// GetTodos - retrieves all Todos in the database
+// ListTodos - retrieves all Todos in the database
 func (t *TodoService) ListTodos(c *gin.Context) {
 	rows, err := sq.
 		Select("*").
 		From(tableName).
 		RunWith(t.Db).
+		Limit(10).
 		Query()
 
 	if err != nil {
@@ -45,9 +46,9 @@ func (t *TodoService) ListTodos(c *gin.Context) {
 	}
 	defer rows.Close()
 
-	todos := make([]TodoDatabaseEntity, 0)
+	todos := make([]Todo, 0)
 	for rows.Next() {
-		var todo TodoDatabaseEntity
+		var todo Todo
 		err := rows.Scan(&todo.CreationTimestamp, &todo.UpdateTimestamp, &todo.ID, &todo.Text, &todo.IsDone)
 		if err != nil {
 			t.Logger.Error(err)
@@ -70,30 +71,24 @@ func (t *TodoService) ListTodos(c *gin.Context) {
 	})
 }
 
-// TodoPost - Base type
-type TodoPost struct {
-	Text   string
-	IsDone bool
-}
-
-type PostRes struct {
-	id uuid.UUID
+type CreateTodoResponseBody struct {
+	id uuidv4.UUID
 }
 
 // PostTodos - retrieves all Todos in the database
 func (t *TodoService) CreateTodo(c *gin.Context) {
-	var todopostmap TodoPost
-	err := c.BindJSON(&todopostmap)
+	var todo Todo
+	err := c.BindJSON(&todo)
 	if err != nil {
 		t.Logger.Error(err)
 		return
 	}
 
 	/**
-	 * do some validation that the todopostmap has all the fields required
+	 * do some validation that the todo has all the fields required
 	 * figure out how to throw 400 BAD REQUEST
 	 */
-	uuidv, err := uuid.NewV4()
+	uuid, err := uuidv4.NewV4()
 	if err != nil {
 		t.Logger.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -106,12 +101,12 @@ func (t *TodoService) CreateTodo(c *gin.Context) {
 	err = sq.
 		Insert(tableName).
 		Columns("id", "is_done", "text").
-		Values(uuidv, todopostmap.IsDone, todopostmap.Text).
+		Values(uuid, todo.IsDone, todo.Text).
 		Suffix("RETURNING \"id\"").
 		RunWith(t.Db).
 		PlaceholderFormat(sq.Dollar).
 		QueryRow().
-		Scan(&uuidv)
+		Scan(&uuid)
 
 	if err != nil {
 		t.Logger.Error(err)
@@ -124,8 +119,8 @@ func (t *TodoService) CreateTodo(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
-		"data": PostRes{
-			id: uuidv,
+		"data": CreateTodoResponseBody{
+			id: uuid,
 		},
 	})
 }
