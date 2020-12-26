@@ -57,7 +57,11 @@ func (d *Database) Init(logger *zap.SugaredLogger) (*sql.DB, error) {
 	}
 	logger.Infof("migration - version: %v dirty: %v", version, dirty)
 
-	m.Steps(databaseVersion)
+	err = m.Steps(databaseVersion)
+	if err != nil {
+		logger.Error(err)
+		return nil, err
+	}
 
 	logger.Info("database connection/migration successful")
 	return db, nil
