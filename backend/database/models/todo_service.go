@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gin-gonic/gin"
-	"github.com/kieran-osgood/go-rest-todo/api"
+	"github.com/kieran-osgood/go-rest-todo/api/errors"
 	"net/http"
 
 	uuidv4 "github.com/gofrs/uuid"
@@ -41,7 +41,7 @@ func (t *TodoService) ListTodos(c *gin.Context) {
 		t.Logger.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
-			"error":   api.ServerError,
+			"error":   errors.ServerError,
 			"message": "Database connection failed.",
 		})
 		return
@@ -63,7 +63,7 @@ func (t *TodoService) ListTodos(c *gin.Context) {
 		t.Logger.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
-			"error":   api.ServerError,
+			"error":   errors.ServerError,
 			"message": "Error serializing database rows.",
 		})
 		return
@@ -78,7 +78,7 @@ type CreateTodoResponseBody struct {
 	id uuidv4.UUID
 }
 
-// PostTodos - retrieves all Todos in the database
+// CreateTodo - retrieves all Todos in the database
 func (t *TodoService) CreateTodo(c *gin.Context) {
 	var todo Todo
 	err := c.BindJSON(&todo)
@@ -86,7 +86,7 @@ func (t *TodoService) CreateTodo(c *gin.Context) {
 		t.Logger.Error(err)
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"error":   api.BadRequest,
+			"error":   errors.BadRequest,
 			"message": "Invalid post body.",
 		})
 		return
@@ -95,7 +95,7 @@ func (t *TodoService) CreateTodo(c *gin.Context) {
 	if todo.Text == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"error":   api.BadRequest,
+			"error":   errors.BadRequest,
 			"message": "Text is a required field.",
 		})
 		return
@@ -106,7 +106,7 @@ func (t *TodoService) CreateTodo(c *gin.Context) {
 		t.Logger.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
-			"error":   api.ServerError,
+			"error":   errors.ServerError,
 			"message": "Couldn't create ID.",
 		})
 		return
@@ -126,7 +126,7 @@ func (t *TodoService) CreateTodo(c *gin.Context) {
 		t.Logger.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
-			"error":   api.ServerError,
+			"error":   errors.ServerError,
 			"message": "Failed to access database.",
 		})
 		return
@@ -155,7 +155,7 @@ func (t *TodoService) DeleteTodo(c *gin.Context) {
 		t.Logger.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
-			"error":   api.ServerError,
+			"error":   errors.ServerError,
 			"message": "Failed to access database.",
 		})
 		return
@@ -165,4 +165,29 @@ func (t *TodoService) DeleteTodo(c *gin.Context) {
 		"success": true,
 	})
 	return
+}
+
+// SearchTodos - retrieves all Todos in the database
+func (t *TodoService) SearchTodos(c *gin.Context) {
+	values := c.Request.URL.Query()
+
+	if values["search"] == nil {
+		t.Logger.Error("Search query parameter was empty.")
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"error":   errors.BadRequest,
+			"message": "Search query parameter cannot be empty.",
+		})
+		return
+	}
+
+	//t.Db.Query()
+	//if err != nil {
+	//	t.Logger.Error(err)
+	//	c.JSON(http.StatusInternalServerError, gin.H{
+	//		"success": false,
+	//		"error":   errors.ServerError,
+	//		"message": "Couldn't create ID.",
+	//	})
+	//	return
 }
