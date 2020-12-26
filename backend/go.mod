@@ -3,6 +3,7 @@ module github.com/kieran-osgood/go-rest-todo
 go 1.15
 
 require (
+	github.com/99designs/gqlgen v0.13.0 // indirect
 	github.com/Masterminds/squirrel v1.5.0
 	github.com/docker/docker v17.12.0-ce-rc1.0.20200618181300-9dc6525e6118+incompatible
 	github.com/docker/go-metrics v0.0.1 // indirect

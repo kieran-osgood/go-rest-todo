@@ -49,6 +49,7 @@ func todoRoutes(logger *zap.SugaredLogger, apiGroup *gin.RouterGroup, db *sql.DB
 		Logger: logger,
 	}
 
+	todosGroup.GET("/search", todoService.SearchTodos)
 	todosGroup.GET("", todoService.ListTodos)
 	todosGroup.POST("", todoService.CreateTodo)
 	todosGroup.DELETE("/:id", todoService.DeleteTodo)

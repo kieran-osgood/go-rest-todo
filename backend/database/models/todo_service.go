@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/kieran-osgood/go-rest-todo/api/errors"
 	"net/http"
+	"strings"
 
 	uuidv4 "github.com/gofrs/uuid"
 	"go.uber.org/zap"
@@ -170,8 +171,9 @@ func (t *TodoService) DeleteTodo(c *gin.Context) {
 // SearchTodos - retrieves all Todos in the database
 func (t *TodoService) SearchTodos(c *gin.Context) {
 	values := c.Request.URL.Query()
+	searchText := values["search"]
 
-	if values["search"] == nil {
+	if searchText == nil {
 		t.Logger.Error("Search query parameter was empty.")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
@@ -181,13 +183,47 @@ func (t *TodoService) SearchTodos(c *gin.Context) {
 		return
 	}
 
-	//t.Db.Query()
-	//if err != nil {
-	//	t.Logger.Error(err)
-	//	c.JSON(http.StatusInternalServerError, gin.H{
-	//		"success": false,
-	//		"error":   errors.ServerError,
-	//		"message": "Couldn't create ID.",
-	//	})
-	//	return
+	rows, err := sq.
+		Select("*").
+		From(tableName).
+		OrderByClause("SIMILARITY(text ,?) DESC", strings.Join(searchText, "")).
+		Limit(5).
+		PlaceholderFormat(sq.Dollar).
+		RunWith(t.Db).
+		Query()
+
+	if err != nil {
+		t.Logger.Error(err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"error":   errors.ServerError,
+			"message": "Database connection failed.",
+		})
+		return
+	}
+	defer rows.Close()
+
+	todos := make([]Todo, 0)
+	for rows.Next() {
+		var todo Todo
+		err := rows.Scan(&todo.CreationTimestamp, &todo.UpdateTimestamp, &todo.ID, &todo.Text, &todo.IsDone)
+		if err != nil {
+			t.Logger.Error(err)
+			return
+		}
+		todos = append(todos, todo)
+	}
+
+	if err = rows.Err(); err != nil {
+		t.Logger.Error(err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"error":   errors.ServerError,
+			"message": "Error serializing database rows.",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"data": todos,
+	})
 }
