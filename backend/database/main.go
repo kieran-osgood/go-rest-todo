@@ -20,7 +20,7 @@ type Database struct {
 	DbName string
 }
 
-const databaseVersion int = 3
+const databaseVersion = 3
 
 // Init function for database
 func (d *Database) Init(logger *zap.SugaredLogger) (*sql.DB, error) {
@@ -48,19 +48,26 @@ func (d *Database) Init(logger *zap.SugaredLogger) (*sql.DB, error) {
 		return nil, err
 	}
 
-	version, dirty, err := m.Version()
+	migrationVersion, dirty, err := m.Version()
 	if dirty {
 		logger.Fatal("the current database schema is reported as being dirty. A manual resolution is needed")
 	}
 	if err != nil {
 		return nil, err
 	}
-	logger.Infof("migration - version: %v dirty: %v", version, dirty)
-
-	err = m.Steps(databaseVersion)
-	if err != nil {
-		logger.Error(err)
-		return nil, err
+	logger.Infof("migration - migrationVersion: %v dirty: %v", migrationVersion, dirty)
+	if databaseVersion != migrationVersion {
+		err = nil
+		if databaseVersion > migrationVersion {
+			err = m.Up()
+		} else {
+			err = m.Down()
+		}
+		
+		if err != nil {
+			logger.Error(err)
+			return nil, err
+		}
 	}
 
 	logger.Info("database connection/migration successful")
