@@ -2,15 +2,28 @@ package api
 
 import (
 	"database/sql"
-
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/kieran-osgood/go-rest-todo/database/models"
 	"go.uber.org/zap"
+	"time"
 )
 
 // Init function for API service
 func Init(logger *zap.SugaredLogger, db *sql.DB) error {
 	router := gin.Default()
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000", "*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH"},
+		AllowHeaders:     []string{"Origin"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		AllowOriginFunc: func(origin string) bool {
+			return origin == "https://github.com"
+		},
+		MaxAge: 12 * time.Hour,
+	}))
+
 	apiGroup := router.Group("/api")
 
 	declareAPIRoutes(logger, apiGroup, db)
@@ -36,7 +49,7 @@ func todoRoutes(logger *zap.SugaredLogger, apiGroup *gin.RouterGroup, db *sql.DB
 		Logger: logger,
 	}
 
-	todosGroup.GET("/", todoService.ListTodos)
-	todosGroup.POST("/", todoService.CreateTodo)
+	todosGroup.GET("", todoService.ListTodos)
+	todosGroup.POST("", todoService.CreateTodo)
 	todosGroup.DELETE("/:id", todoService.DeleteTodo)
 }
