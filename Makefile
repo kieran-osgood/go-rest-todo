@@ -9,8 +9,6 @@ down:
 	cd backend && docker-compose down --rmi all
 run:
 	cd backend && go run main.go
-generate:
-	cd backend && go run github.com/99designs/gqlgen generate
 db-generate: # usage: make db-generate migration="INSERT_MIGRATION_NAME"
 	cd backend && migrate create -ext sql -dir database/migrations -seq $(migration)
 db-migrate:
