@@ -20,10 +20,10 @@ func init() {
 }
 
 func initLogger() (*zap.SugaredLogger, error) {
-	config := zap.NewDevelopmentConfig()
-	config.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+	loggerConfig := zap.NewDevelopmentConfig()
+	loggerConfig.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 
-	logger, err := config.Build()
+	logger, err := loggerConfig.Build()
 	if err != nil {
 		return nil, err
 	}
@@ -39,15 +39,15 @@ func main() {
 		log.Fatalf("can't initialize zap logger: %v", err)
 	}
 
-	config := config.New()
-
+	c := config.New()
 	pgsql := database.Database{
-		Host:   config.Database.Host,
-		Port:   config.Database.Port,
-		User:   config.Database.User,
-		Pass:   config.Database.Pass,
-		DbName: config.Database.DbName,
+		Host:   c.Database.Host,
+		Port:   c.Database.Port,
+		User:   c.Database.User,
+		Pass:   c.Database.Pass,
+		DbName: c.Database.DbName,
 	}
+
 	db, err := pgsql.Init(logger)
 	if err != nil {
 		logger.Panicf("pgsql init: %v", err)
