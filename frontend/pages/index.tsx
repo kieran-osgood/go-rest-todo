@@ -1,15 +1,24 @@
 import * as React from 'react';
-import Head from 'next/head';
+import { useQuery } from 'react-query';
+import axios from 'axios';
 import styles from '../styles/Home.module.scss';
+import Layout from '../components/layout';
+
+const baseUrl = '';
+
+const getPostById = async (postId) => {
+  const { data } = await axios.get(
+    `${baseUrl}${postId}`,
+  );
+  return data;
+};
 
 export default function Home() {
-  return (
-    <div className={styles.container}>
-      <Head>
-        <title>Fuzzy Search</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+  const [search, setSearch] = React.useState('');
+  useQuery(['search', search], () => getPostById(search));
 
+  return (
+    <Layout>
       <main className={styles.main}>
         <h1 className={styles.title}>
           Fuzzy Search
@@ -20,11 +29,13 @@ export default function Home() {
         </p>
 
         <div className={styles.card}>
-          Search:
-          <input type="text" />
+          Search:&nbsp;
+          <input type="text" value={search} onChange={(e) => setSearch(e.currentTarget.value)} />
+          <ul>
+            <li>test</li>
+          </ul>
         </div>
       </main>
-
-    </div>
+    </Layout>
   );
 }
