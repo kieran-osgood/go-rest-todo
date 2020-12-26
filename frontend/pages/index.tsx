@@ -6,16 +6,25 @@ import Layout from '../components/layout';
 
 const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
-const getPostById = async (postId) => {
+// const getPostById = async (postId) => {
+//   const { data } = await axios.get(
+//     `${baseUrl}${postId}`,
+//   );
+//   return data;
+// };
+
+const getPost = async () => {
   const { data } = await axios.get(
-    `${baseUrl}${postId}`,
+    '/api/todos',
   );
   return data;
 };
 
 export default function Home() {
   const [search, setSearch] = React.useState('');
-  useQuery(['search', search], () => getPostById(search));
+  // useQuery(['searchById', search], () => getPostById(search));
+  const { data } = useQuery(['search'], () => getPost());
+  console.log('data: ', data);
 
   return (
     <Layout>
@@ -23,7 +32,7 @@ export default function Home() {
         <h1 className={styles.title}>
           Fuzzy Search
         </h1>
-
+        {`${baseUrl}/todos`}
         <p className={styles.description}>
           Fuzzy search:
         </p>

@@ -8,7 +8,13 @@ import {
 } from 'react-query';
 import { AppProps } from 'next/app';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 0,
+    },
+  },
+});
 
 function App({ Component, pageProps }: AppProps) {
   return (
