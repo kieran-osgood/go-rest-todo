@@ -4,7 +4,7 @@ import axios from 'axios';
 import styles from '../styles/Home.module.scss';
 import Layout from '../components/layout';
 
-const baseUrl = '';
+const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
 const getPostById = async (postId) => {
   const { data } = await axios.get(
