@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { useQuery } from 'react-query';
-import axios from 'axios';
+import { useQuery, UseQueryResult } from 'react-query';
+import axios, { AxiosError } from 'axios';
 import styles from '../styles/Home.module.scss';
 import Layout from '../components/layout';
 
@@ -19,20 +19,26 @@ const getPost = async () => {
   );
   return data;
 };
+type DateTime = {Time: string, Valid: boolean};
+type Todo = {
+  CreationTimestamp: DateTime;
+  UpdateTimestamp: DateTime;
+  ID: string;
+  IsDone: boolean;
+  Text: string;
+}
+
+const useListTodos = (): UseQueryResult<{data: Todo[]}, AxiosError> => useQuery('search', () => getPost());
 
 export default function Home() {
   const [search, setSearch] = React.useState('');
-  // useQuery(['searchById', search], () => getPostById(search));
-  const { data } = useQuery(['search'], () => getPost());
-  console.log('data: ', data);
-
+  const { data: todoList } = useListTodos();
   return (
     <Layout>
       <main className={styles.main}>
         <h1 className={styles.title}>
           Fuzzy Search
         </h1>
-        {`${baseUrl}/todos`}
         <p className={styles.description}>
           Fuzzy search:
         </p>
@@ -41,7 +47,9 @@ export default function Home() {
           Search:&nbsp;
           <input type="text" value={search} onChange={(e) => setSearch(e.currentTarget.value)} />
           <ul>
-            <li>test</li>
+            {todoList?.data?.map((todo) => (
+              <li key={todo.ID}>{todo.Text}</li>
+            ))}
           </ul>
         </div>
       </main>
