@@ -29,8 +29,6 @@ func initLogger() (*zap.SugaredLogger, error) {
 		return nil, err
 	}
 
-	defer errorHandler.CleanUpAndHandleErrorDefaultLogger(logger.Sync, logger)
-
 	sugar := logger.Sugar()
 
 	return sugar, nil
@@ -41,6 +39,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("can't initialize zap logger: %v", err)
 	}
+	
+	defer errorHandler.CleanUpAndHandleError(logger.Sync, logger)
 
 	c := config.New()
 	pgsql := database.Database{
