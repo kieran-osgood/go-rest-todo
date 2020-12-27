@@ -5,6 +5,7 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gin-gonic/gin"
 	"github.com/kieran-osgood/go-rest-todo/api/errors"
+	errorHandler "github.com/kieran-osgood/go-rest-todo/error"
 	"net/http"
 	"strings"
 
@@ -47,7 +48,8 @@ func (t *TodoService) ListTodos(c *gin.Context) {
 		})
 		return
 	}
-	defer rows.Close()
+
+	defer errorHandler.CleanUpAndHandleError(rows.Close, t.Logger)
 
 	todos := make([]Todo, 0)
 	for rows.Next() {
@@ -201,7 +203,8 @@ func (t *TodoService) SearchTodos(c *gin.Context) {
 		})
 		return
 	}
-	defer rows.Close()
+
+	defer errorHandler.CleanUpAndHandleError(rows.Close, t.Logger)
 
 	todos := make([]Todo, 0)
 	for rows.Next() {

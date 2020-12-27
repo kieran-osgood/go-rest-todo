@@ -7,6 +7,7 @@ import (
 	"github.com/kieran-osgood/go-rest-todo/api"
 	"github.com/kieran-osgood/go-rest-todo/config"
 	"github.com/kieran-osgood/go-rest-todo/database"
+	errorHandler "github.com/kieran-osgood/go-rest-todo/error"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -27,7 +28,9 @@ func initLogger() (*zap.SugaredLogger, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer logger.Sync() // flushes buffer, if any
+
+	defer errorHandler.CleanUpAndHandleErrorDefaultLogger(logger.Sync, logger)
+
 	sugar := logger.Sugar()
 
 	return sugar, nil
@@ -52,7 +55,8 @@ func main() {
 	if err != nil {
 		logger.Panicf("pgsql init: %v", err)
 	}
-	defer db.Close()
+
+	defer errorHandler.CleanUpAndHandleError(db.Close, logger)
 
 	err = api.Init(logger, db)
 	if err != nil {
