@@ -39,7 +39,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("can't initialize zap logger: %v", err)
 	}
-	
+
 	defer errorHandler.CleanUpAndHandleError(logger.Sync, logger)
 
 	c := config.New()
@@ -55,7 +55,6 @@ func main() {
 	if err != nil {
 		logger.Panicf("pgsql init: %v", err)
 	}
-
 	defer errorHandler.CleanUpAndHandleError(db.Close, logger)
 
 	err = api.Init(logger, db)

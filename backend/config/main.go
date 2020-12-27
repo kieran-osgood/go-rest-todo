@@ -20,7 +20,7 @@ type Config struct {
 	Database DatabaseConfig
 }
 
-// New returns a new Config struct
+// New - returns a new Config struct
 func New() *Config {
 	return &Config{
 		Database: DatabaseConfig{

@@ -143,7 +143,7 @@ func (t *TodoService) CreateTodo(c *gin.Context) {
 	})
 }
 
-// DeleteTodo - retrieves all Todos in the database
+// DeleteTodo - delete a todo via the ID
 func (t *TodoService) DeleteTodo(c *gin.Context) {
 	id := c.Param("id")
 
@@ -170,7 +170,7 @@ func (t *TodoService) DeleteTodo(c *gin.Context) {
 	return
 }
 
-// SearchTodos - retrieves all Todos in the database
+// SearchTodos searches `todo` table using postgresql `trigram`  search algorithm
 func (t *TodoService) SearchTodos(c *gin.Context) {
 	values := c.Request.URL.Query()
 	searchText := values["search"]

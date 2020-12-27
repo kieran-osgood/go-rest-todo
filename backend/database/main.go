@@ -22,7 +22,7 @@ type Database struct {
 
 const databaseVersion = 3
 
-// Init function for database
+// Init establishes a database connection, applies migrations, and returns a *sql.DB instance
 func (d *Database) Init(logger *zap.SugaredLogger) (*sql.DB, error) {
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		d.Host, d.Port, d.User, d.Pass, d.DbName)
@@ -63,7 +63,7 @@ func (d *Database) Init(logger *zap.SugaredLogger) (*sql.DB, error) {
 		} else {
 			err = m.Down()
 		}
-		
+
 		if err != nil {
 			logger.Error(err)
 			return nil, err
