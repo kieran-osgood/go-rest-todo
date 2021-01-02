@@ -13,14 +13,14 @@ import (
 func Init(logger *zap.SugaredLogger, db *sql.DB) error {
 	router := gin.Default()
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000", "*"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH"},
-		AllowHeaders:     []string{"Origin"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		AllowOriginFunc: func(origin string) bool {
-			return origin == "https://github.com"
-		},
+		AllowOrigins:  []string{"http://localhost:3000", "*"},
+		AllowMethods:  []string{"GET", "POST", "PUT", "PATCH", "OPTIONS"},
+		AllowHeaders:  []string{"Origin"},
+		ExposeHeaders: []string{"Content-Length"},
+		//AllowCredentials: true,
+		//AllowOriginFunc: func(origin string) bool {
+		//	return origin == "https://github.com"
+		//},
 		MaxAge: 12 * time.Hour,
 	}))
 
