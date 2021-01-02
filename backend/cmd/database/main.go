@@ -42,7 +42,7 @@ func (d *Database) Init(logger *zap.SugaredLogger) (*sql.DB, error) {
 
 	driver, err := postgres.WithInstance(db, &postgres.Config{})
 	m, err := migrate.NewWithDatabaseInstance(
-		"file://database/migrations", "postgres", driver)
+		"file://cmd/database/migrations", "postgres", driver)
 	if err != nil {
 		logger.Error(err)
 		return nil, err

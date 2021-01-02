@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gin-gonic/gin"
-	"github.com/kieran-osgood/go-rest-todo/api/errors"
-	errorHandler "github.com/kieran-osgood/go-rest-todo/error"
+	"github.com/kieran-osgood/go-rest-todo/cmd/api/errors"
+	errorHandler "github.com/kieran-osgood/go-rest-todo/cmd/error"
 	"net/http"
 	"strings"
 

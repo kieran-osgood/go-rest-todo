@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/kieran-osgood/go-rest-todo/api/services"
+	"github.com/kieran-osgood/go-rest-todo/cmd/api/services"
 	"go.uber.org/zap"
 	"time"
 )

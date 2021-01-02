@@ -4,10 +4,10 @@ import (
 	"log"
 
 	"github.com/joho/godotenv"
-	"github.com/kieran-osgood/go-rest-todo/api"
-	"github.com/kieran-osgood/go-rest-todo/config"
-	"github.com/kieran-osgood/go-rest-todo/database"
-	errorHandler "github.com/kieran-osgood/go-rest-todo/error"
+	"github.com/kieran-osgood/go-rest-todo/cmd/api"
+	"github.com/kieran-osgood/go-rest-todo/cmd/config"
+	"github.com/kieran-osgood/go-rest-todo/cmd/database"
+	errorHandler "github.com/kieran-osgood/go-rest-todo/cmd/error"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
