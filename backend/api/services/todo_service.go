@@ -1,4 +1,4 @@
-package models
+package services
 
 import (
 	"database/sql"
@@ -137,7 +137,7 @@ func (t *TodoService) CreateTodo(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
-		"data": CreateTodoResponseBody{
+		"data": &CreateTodoResponseBody{
 			id: uuid,
 		},
 	})

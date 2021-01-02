@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/kieran-osgood/go-rest-todo/database/models"
+	"github.com/kieran-osgood/go-rest-todo/api/services"
 	"go.uber.org/zap"
 	"time"
 )
@@ -44,7 +44,7 @@ func declareAPIRoutes(logger *zap.SugaredLogger, apiGroup *gin.RouterGroup, db *
 
 func todoRoutes(logger *zap.SugaredLogger, apiGroup *gin.RouterGroup, db *sql.DB) {
 	todosGroup := apiGroup.Group("/todos")
-	todoService := &models.TodoService{
+	todoService := &services.TodoService{
 		Db:     db,
 		Logger: logger,
 	}
