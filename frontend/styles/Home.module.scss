@@ -31,6 +31,7 @@
 .form {
   display: flex;
   flex-direction: column;
+  margin-top: 1rem; 
 }
 .label{
   width: 100%;
@@ -45,6 +46,21 @@
   padding: 0 0.5rem;
   font-size: 1.25rem;
 }
+.list{
+  padding: 0;
+}
+.checkbox {
+
+}
+.listItem{
+  display: flex;
+  flex-direction:row;
+  width: 100%;
+}
+.listText {
+  margin-left: 0.5rem;
+  list-style: none;
+}
 .button {
   background-color:transparent;
   border: 0.5px solid #3d78bb;
@@ -53,6 +69,7 @@
   padding: 0.5rem;
   border-radius: 0.5rem;
   margin-top: 1rem;
+  cursor: pointer;
 }
 .card {
   margin: 1rem;
