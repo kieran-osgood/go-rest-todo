@@ -8,8 +8,9 @@ import * as z from 'zod';
 import styles from '../styles/Home.module.scss';
 
 const todoForm = z.object({
-  Text: z.string().nonempty(),
+  text: z.string().nonempty(),
 });
+
 type FormData = z.infer<typeof todoForm>;
 
 const postTodo = async (formData: FormData) => {
@@ -33,7 +34,7 @@ export default function Form() {
   return (
     <form className={styles.form} onSubmit={handleSubmit(submit)}>
       <label htmlFor="todo" className={styles.label}>
-        <input type="text" id="todo" name="Text" className={styles.input} ref={register} />
+        <input type="text" id="todo" name="text" className={styles.input} ref={register} />
       </label>
       <button type="submit" className={styles.button}>Add</button>
     </form>

@@ -14,11 +14,11 @@ const getSearchTodos = async (name: string) => {
 
 type DateTime = {Time: string, Valid: boolean};
 export type Todo = {
-  CreationTimestamp: DateTime;
-  UpdateTimestamp: DateTime;
-  ID: string;
-  IsDone: boolean;
-  Text: string;
+  creationTimestamp: DateTime;
+  updateTimestamp: DateTime;
+  id: string;
+  isDone: boolean;
+  text: string;
 }
 
 const useSearchTodos = (searchString: string): UseQueryResult<{data: Todo[]}, AxiosError> => useQuery(['search', searchString], () => getSearchTodos(searchString));
@@ -41,7 +41,7 @@ export default function SearchCard() {
           {todoList?.data?.map((todo) => (
             <div className={styles.listItem}>
               <input type="checkbox" className={styles.checkbox} />
-              <li key={todo.ID} className={styles.listText}>{todo.Text}</li>
+              <li key={todo.id} className={styles.listText}>{todo.text}</li>
             </div>
           ))}
         </ul>
