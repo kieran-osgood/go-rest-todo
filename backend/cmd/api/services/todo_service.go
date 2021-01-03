@@ -23,11 +23,11 @@ var tableName = "todo"
 
 // Todo - Full model representative of the database shape
 type Todo struct {
-	UpdateTimestamp   sql.NullTime
-	CreationTimestamp sql.NullTime
-	ID                uuidv4.UUID
-	Text              string
-	IsDone            bool
+	UpdateTimestamp   sql.NullTime `json:"updateTimestamp"`
+	CreationTimestamp sql.NullTime `json:"creationTimestamp"`
+	ID                uuidv4.UUID  `json:"id"`
+	Text              string       `json:"text"`
+	IsDone            bool         `json:"isDone"`
 }
 
 // ListTodos - retrieves all Todos in the database
