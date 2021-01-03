@@ -40,17 +40,28 @@ func New(logger *zap.SugaredLogger, db *sql.DB) error {
 
 func declareAPIRoutes(logger *zap.SugaredLogger, apiGroup *gin.RouterGroup, db *sql.DB) {
 	todoRoutes(logger, apiGroup, db)
+	authRoutes(logger, apiGroup, db)
 }
 
 func todoRoutes(logger *zap.SugaredLogger, apiGroup *gin.RouterGroup, db *sql.DB) {
 	todosGroup := apiGroup.Group("/todos")
-	todoService := &services.Service{
+	service := &services.Service{
 		Db:     db,
 		Logger: logger,
 	}
 
-	todosGroup.GET("/search", todoService.SearchTodos)
-	todosGroup.GET("", todoService.ListTodos)
-	todosGroup.POST("", todoService.CreateTodo)
-	todosGroup.DELETE("/:id", todoService.DeleteTodo)
+	todosGroup.GET("/search", service.SearchTodos)
+	todosGroup.GET("", service.ListTodos)
+	todosGroup.POST("", service.CreateTodo)
+	todosGroup.DELETE("/:id", service.DeleteTodo)
+}
+
+func authRoutes(logger *zap.SugaredLogger, apiGroup *gin.RouterGroup, db *sql.DB) {
+	authGroup := apiGroup.Group("/login")
+	service := &services.Service{
+		Db:     db,
+		Logger: logger,
+	}
+
+	authGroup.POST("", service.Login)
 }

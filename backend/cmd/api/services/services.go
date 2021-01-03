@@ -29,6 +29,13 @@ func (s *Service) AbortBadRequest(c *gin.Context, err error, message string) {
 	}
 }
 
+func (s *Service) AbortUnauthorized(c *gin.Context, err error, message string) {
+	if err != nil {
+		s.Logger.Error(err)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, ErrorBody(false, err, message))
+	}
+}
+
 func (s *Service) AbortServerError(c *gin.Context, err error, message string) {
 	if err != nil {
 		s.Logger.Error(err)

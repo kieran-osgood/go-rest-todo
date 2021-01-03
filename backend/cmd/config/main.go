@@ -17,12 +17,14 @@ type DatabaseConfig struct {
 
 // Config - Shape of environment variables
 type Config struct {
-	Database DatabaseConfig
+	Database  DatabaseConfig
+	JwtSecret string
 }
 
 // New - returns a new Config struct
 func New() *Config {
 	return &Config{
+		JwtSecret: getEnv("JWT_SECRET_KEY", ""),
 		Database: DatabaseConfig{
 			Host:   getEnv("POSTGRES_HOST", ""),
 			Port:   getEnvAsInt("POSTGRES_PORT", 1),
