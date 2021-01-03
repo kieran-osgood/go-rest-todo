@@ -57,7 +57,7 @@ func main() {
 	}
 	defer errorHandler.CleanUpAndHandleError(db.Close, logger)
 
-	err = api.Init(logger, db)
+	err = api.New(logger, db)
 	if err != nil {
 		logger.Panicf("api init: %v", err)
 	}

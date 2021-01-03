@@ -9,8 +9,8 @@ import (
 	"time"
 )
 
-// Init function for API service
-func Init(logger *zap.SugaredLogger, db *sql.DB) error {
+// New function for API service
+func New(logger *zap.SugaredLogger, db *sql.DB) error {
 	router := gin.Default()
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:  []string{"http://localhost:3000", "*"},
