@@ -3,6 +3,6 @@ package errors
 // Text representation of http status codes
 // to be used as fallback if no suitable error message applicable
 const (
-	ServerError = "Server Error"
-	BadRequest  = "Bad Request"
+	ServerError = "server error"
+	BadRequest  = "bad request"
 )
