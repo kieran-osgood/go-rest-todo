@@ -10,14 +10,7 @@ import (
 	"strings"
 
 	uuidv4 "github.com/gofrs/uuid"
-	"go.uber.org/zap"
 )
-
-// TodoService - Initializer for service
-type TodoService struct {
-	Logger *zap.SugaredLogger
-	Db     *sql.DB
-}
 
 var tableName = "todo"
 
@@ -31,45 +24,33 @@ type Todo struct {
 }
 
 // ListTodos - retrieves all Todos in the database
-func (t *TodoService) ListTodos(c *gin.Context) {
+func (s *Service) ListTodos(c *gin.Context) {
 	rows, err := sq.
 		Select("*").
 		From(tableName).
-		RunWith(t.Db).
+		RunWith(s.Db).
 		Limit(10).
 		Query()
 
 	if err != nil {
-		t.Logger.Error(err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error":   errors.ServerError,
-			"message": "Database connection failed.",
-		})
-		return
+		s.AbortDbConnError(c, err)
 	}
 
-	defer errorHandler.CleanUpAndHandleError(rows.Close, t.Logger)
+	defer errorHandler.CleanUpAndHandleError(rows.Close, s.Logger)
 
 	todos := make([]Todo, 0)
 	for rows.Next() {
 		var todo Todo
 		err := rows.Scan(&todo.CreationTimestamp, &todo.UpdateTimestamp, &todo.ID, &todo.Text, &todo.IsDone)
 		if err != nil {
-			t.Logger.Error(err)
+			s.Logger.Error(err)
 			return
 		}
 		todos = append(todos, todo)
 	}
 
 	if err = rows.Err(); err != nil {
-		t.Logger.Error(err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error":   errors.ServerError,
-			"message": "Error serializing database rows.",
-		})
-		return
+		s.AbortSerializationError(c, err)
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -82,37 +63,29 @@ type CreateTodoResponseBody struct {
 }
 
 // CreateTodo - retrieves all Todos in the database
-func (t *TodoService) CreateTodo(c *gin.Context) {
+func (s *Service) CreateTodo(c *gin.Context) {
 	var todo Todo
 	err := c.BindJSON(&todo)
 	if err != nil {
-		t.Logger.Error(err)
-		c.JSON(http.StatusBadRequest, gin.H{
-			"success": false,
-			"error":   errors.BadRequest,
-			"message": "Invalid post body.",
-		})
-		return
+		s.AbortBadPostBody(c, err)
 	}
 
 	if todo.Text == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"error":   errors.BadRequest,
 			"message": "Text is a required field.",
 		})
-		return
 	}
 
 	uuid, err := uuidv4.NewV4()
 	if err != nil {
-		t.Logger.Error(err)
-		c.JSON(http.StatusInternalServerError, gin.H{
+		s.Logger.Error(err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"success": false,
 			"error":   errors.ServerError,
 			"message": "Couldn't create ID.",
 		})
-		return
 	}
 
 	err = sq.
@@ -120,19 +93,18 @@ func (t *TodoService) CreateTodo(c *gin.Context) {
 		Columns("id", "is_done", "text").
 		Values(uuid, todo.IsDone, todo.Text).
 		Suffix("RETURNING \"id\"").
-		RunWith(t.Db).
+		RunWith(s.Db).
 		PlaceholderFormat(sq.Dollar).
 		QueryRow().
 		Scan(&uuid)
 
 	if err != nil {
-		t.Logger.Error(err)
-		c.JSON(http.StatusInternalServerError, gin.H{
+		s.Logger.Error(err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"success": false,
 			"error":   errors.ServerError,
 			"message": "Failed to access database.",
 		})
-		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -144,45 +116,42 @@ func (t *TodoService) CreateTodo(c *gin.Context) {
 }
 
 // DeleteTodo - delete a todo via the ID
-func (t *TodoService) DeleteTodo(c *gin.Context) {
+func (s *Service) DeleteTodo(c *gin.Context) {
 	id := c.Param("id")
 
 	_, err := sq.
 		Delete(tableName).
 		Where(sq.Eq{"id": id}).
-		RunWith(t.Db).
+		RunWith(s.Db).
 		PlaceholderFormat(sq.Dollar).
 		Exec()
 
 	if err != nil {
-		t.Logger.Error(err)
-		c.JSON(http.StatusInternalServerError, gin.H{
+		s.Logger.Error(err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"success": false,
 			"error":   errors.ServerError,
 			"message": "Failed to access database.",
 		})
-		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 	})
-	return
 }
 
 // SearchTodos searches `todo` table using postgresql `trigram`  search algorithm
-func (t *TodoService) SearchTodos(c *gin.Context) {
+func (s *Service) SearchTodos(c *gin.Context) {
 	values := c.Request.URL.Query()
 	searchText := values["search"]
 
 	if searchText == nil {
-		t.Logger.Error("Search query parameter was empty.")
-		c.JSON(http.StatusBadRequest, gin.H{
+		s.Logger.Error("Search query parameter was empty.")
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"error":   errors.BadRequest,
 			"message": "Search query parameter cannot be empty.",
 		})
-		return
 	}
 
 	rows, err := sq.
@@ -191,40 +160,38 @@ func (t *TodoService) SearchTodos(c *gin.Context) {
 		OrderByClause("SIMILARITY(text ,?) DESC", strings.Join(searchText, "")).
 		Limit(5).
 		PlaceholderFormat(sq.Dollar).
-		RunWith(t.Db).
+		RunWith(s.Db).
 		Query()
 
 	if err != nil {
-		t.Logger.Error(err)
-		c.JSON(http.StatusInternalServerError, gin.H{
+		s.Logger.Error(err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"success": false,
 			"error":   errors.ServerError,
 			"message": "Database connection failed.",
 		})
-		return
 	}
 
-	defer errorHandler.CleanUpAndHandleError(rows.Close, t.Logger)
+	defer errorHandler.CleanUpAndHandleError(rows.Close, s.Logger)
 
 	todos := make([]Todo, 0)
 	for rows.Next() {
 		var todo Todo
 		err := rows.Scan(&todo.CreationTimestamp, &todo.UpdateTimestamp, &todo.ID, &todo.Text, &todo.IsDone)
 		if err != nil {
-			t.Logger.Error(err)
+			s.Logger.Error(err)
 			return
 		}
 		todos = append(todos, todo)
 	}
 
 	if err = rows.Err(); err != nil {
-		t.Logger.Error(err)
-		c.JSON(http.StatusInternalServerError, gin.H{
+		s.Logger.Error(err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"success": false,
 			"error":   errors.ServerError,
 			"message": "Error serializing database rows.",
 		})
-		return
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"data": todos,

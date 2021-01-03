@@ -44,7 +44,7 @@ func declareAPIRoutes(logger *zap.SugaredLogger, apiGroup *gin.RouterGroup, db *
 
 func todoRoutes(logger *zap.SugaredLogger, apiGroup *gin.RouterGroup, db *sql.DB) {
 	todosGroup := apiGroup.Group("/todos")
-	todoService := &services.TodoService{
+	todoService := &services.Service{
 		Db:     db,
 		Logger: logger,
 	}
