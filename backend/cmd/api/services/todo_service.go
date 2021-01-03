@@ -2,9 +2,10 @@ package services
 
 import (
 	"database/sql"
+	"errors"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gin-gonic/gin"
-	"github.com/kieran-osgood/go-rest-todo/cmd/api/errors"
+	apiErrors "github.com/kieran-osgood/go-rest-todo/cmd/api/errors"
 	errorHandler "github.com/kieran-osgood/go-rest-todo/cmd/error"
 	"net/http"
 	"strings"
@@ -71,21 +72,12 @@ func (s *Service) CreateTodo(c *gin.Context) {
 	}
 
 	if todo.Text == "" {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"success": false,
-			"error":   errors.BadRequest,
-			"message": "Text is a required field.",
-		})
+		s.AbortBadRequest(c, errors.New(apiErrors.BadRequest), "Text is a required field.")
 	}
 
 	uuid, err := uuidv4.NewV4()
 	if err != nil {
-		s.Logger.Error(err)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error":   errors.ServerError,
-			"message": "Couldn't create ID.",
-		})
+		s.AbortServerError(c, errors.New(apiErrors.ServerError), "Couldn't create ID.")
 	}
 
 	err = sq.
@@ -99,12 +91,7 @@ func (s *Service) CreateTodo(c *gin.Context) {
 		Scan(&uuid)
 
 	if err != nil {
-		s.Logger.Error(err)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error":   errors.ServerError,
-			"message": "Failed to access database.",
-		})
+		s.AbortDbConnError(c, errors.New(apiErrors.ServerError))
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -127,12 +114,7 @@ func (s *Service) DeleteTodo(c *gin.Context) {
 		Exec()
 
 	if err != nil {
-		s.Logger.Error(err)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error":   errors.ServerError,
-			"message": "Failed to access database.",
-		})
+		s.AbortDbConnError(c, errors.New(apiErrors.ServerError))
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -146,12 +128,7 @@ func (s *Service) SearchTodos(c *gin.Context) {
 	searchText := values["search"]
 
 	if searchText == nil {
-		s.Logger.Error("Search query parameter was empty.")
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"success": false,
-			"error":   errors.BadRequest,
-			"message": "Search query parameter cannot be empty.",
-		})
+		s.AbortBadRequest(c, errors.New(apiErrors.BadRequest), "Search query parameter cannot be empty.")
 	}
 
 	rows, err := sq.
@@ -164,12 +141,8 @@ func (s *Service) SearchTodos(c *gin.Context) {
 		Query()
 
 	if err != nil {
-		s.Logger.Error(err)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error":   errors.ServerError,
-			"message": "Database connection failed.",
-		})
+		s.AbortDbConnError(c, errors.New(apiErrors.ServerError))
+		return
 	}
 
 	defer errorHandler.CleanUpAndHandleError(rows.Close, s.Logger)
@@ -186,13 +159,9 @@ func (s *Service) SearchTodos(c *gin.Context) {
 	}
 
 	if err = rows.Err(); err != nil {
-		s.Logger.Error(err)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error":   errors.ServerError,
-			"message": "Error serializing database rows.",
-		})
+		s.AbortServerError(c, errors.New(apiErrors.ServerError), "Error serializing database rows.")
 	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"data": todos,
 	})
