@@ -16,7 +16,7 @@ import (
 func init() {
 	// loads values from .env into the system
 	if err := godotenv.Load(); err != nil {
-		log.Panic("./main.go - Can't find .env file")
+		log.Panic("./services.go - Can't find .env file")
 	}
 }
 
