@@ -69,15 +69,18 @@ func (s *Service) CreateTodo(c *gin.Context) {
 	err := c.BindJSON(&todo)
 	if err != nil {
 		s.AbortBadPostBody(c, err)
+		return
 	}
 
 	if todo.Text == "" {
 		s.AbortBadRequest(c, errors.New(apiErrors.BadRequest), "Text is a required field.")
+		return
 	}
 
 	uuid, err := uuidv4.NewV4()
 	if err != nil {
 		s.AbortServerError(c, errors.New(apiErrors.ServerError), "Couldn't create ID.")
+		return
 	}
 
 	err = sq.
@@ -97,7 +100,7 @@ func (s *Service) CreateTodo(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"data": &CreateTodoResponseBody{
-			id: uuid,
+			id: uuid, // TODO Still not returning this
 		},
 	})
 }
@@ -115,6 +118,7 @@ func (s *Service) DeleteTodo(c *gin.Context) {
 
 	if err != nil {
 		s.AbortDbConnError(c, errors.New(apiErrors.ServerError))
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -129,6 +133,7 @@ func (s *Service) SearchTodos(c *gin.Context) {
 
 	if searchText == nil {
 		s.AbortBadRequest(c, errors.New(apiErrors.BadRequest), "Search query parameter cannot be empty.")
+		return
 	}
 
 	rows, err := sq.
@@ -160,6 +165,7 @@ func (s *Service) SearchTodos(c *gin.Context) {
 
 	if err = rows.Err(); err != nil {
 		s.AbortServerError(c, errors.New(apiErrors.ServerError), "Error serializing database rows.")
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
