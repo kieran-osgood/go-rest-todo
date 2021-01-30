@@ -15,7 +15,7 @@ export default function Home() {
           </h1>
           <Form />
         </div>
-        {/* <SearchCard /> */}
+        <SearchCard />
       </main>
     </Layout>
   );
