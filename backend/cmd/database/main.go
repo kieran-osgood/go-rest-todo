@@ -52,9 +52,6 @@ func (d *Database) Init(logger *zap.SugaredLogger) (*sql.DB, error) {
 	if dirty {
 		logger.Fatal("the current database schema is reported as being dirty. A manual resolution is needed")
 	}
-	if err != nil {
-		return nil, err
-	}
 	logger.Infof("migration - migrationVersion: %v dirty: %v", migrationVersion, dirty)
 	if databaseVersion != migrationVersion {
 		err = nil
